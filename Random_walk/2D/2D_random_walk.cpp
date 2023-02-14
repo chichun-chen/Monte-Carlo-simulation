@@ -1,12 +1,12 @@
 /*
     Compile with:
-    gcc -Wall -I/opt/homebrew/include -c 2D_random_walk.cpp
-    gcc -L/opt/homebrew/lib -o 2D_random_walk.out 2D_random_walk.o -lgsl -lgslcblas -lm
+    Mac M1 : clang++ -o 2D_random_walk 2D_random_walk.cpp
 */
 
 #include<iostream>
-#include <cmath>
-#include<gsl/gsl_rng.h>
+#include<cmath>
+#include<random>
+#include<chrono>
 
 using namespace std;
 
@@ -23,11 +23,13 @@ int main()
     double d;          // mean distance 
     double walk;       // random walk
     FILE *f; 
-    gsl_rng *rng;
     
-    f=fopen("mean_distance.txt","w");
-    rng = gsl_rng_alloc(gsl_rng_mt19937);
-    gsl_rng_set(rng, 2023);    
+    f=fopen("mean_distance.txt","w");    
+
+    mt19937_64 rng;
+    uint64_t timeSeed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    rng.seed(2023);
+    std::uniform_real_distribution<double> unif(0, 1);
 
     for (int N=0; N<=N_max; N++){
         // simulate N^2 times for each N
@@ -36,7 +38,7 @@ int main()
             x=0; y=0;
             // walk N steps
             for (int s=0; s<N; s++){
-                walk = gsl_rng_uniform(rng);
+                walk = unif(rng);
                 if (walk <= 0.25)
                     y++;
                 else if (walk <= 0.5)

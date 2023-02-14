@@ -1,14 +1,13 @@
 /*
     Compile with:
-    gcc -Wall -I/opt/homebrew/include -c D-Dim_random_walk.cpp
-    gcc -L/opt/homebrew/lib -o D-Dim_random_walk.out D-Dim_random_walk.o -lgsl -lgslcblas -lm -lstdc++
+    Mac M1 : clang++ -o D-Dim_random_walk D-Dim_random_walk.cpp 
 */
 
 #include<iostream>
-#include <cmath>
+#include<cmath>
 #include<vector>
-#include<gsl/gsl_rng.h>
-
+#include<random>
+#include<chrono>
 using namespace std;
 
 
@@ -25,28 +24,31 @@ vector<int> initialize(vector<int> v){
     return v;
 }
 
-int main(){
-    int Dim=5;                // Dimension
-    vector<int> p(Dim,0);     // position coordinates
-    int N_max=250;             // Random steps
-    double d;                 // mean distance 
-    double walk;              // random walk
-    int  partition;           // for determine direction of walks
+int main(int argc, char* argv[]){
+    
+    int Dim = atoi(argv[1]);      // Dimension                
+    vector<int> p(Dim,0);         // position coordinates
+    int N_max=1000/Dim;           // Random steps
+    double d;                     // mean distance 
+    double walk;                  // random walk
+    int  partition;               // for determine direction of walks
     FILE *f; 
-    gsl_rng *rng;
     
     f=fopen("mean_distance.txt","w");
-    rng = gsl_rng_alloc(gsl_rng_mt19937);
-    gsl_rng_set(rng, 2023);    
+    
+    mt19937_64 rng;
+    uint64_t timeSeed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    rng.seed(2023);
+    std::uniform_real_distribution<double> unif(0, 1);    
 
     for (int N=0; N<=N_max; N++){
         // simulate N^D times for each N
         d=0;
-        for (int t=0; t<pow(N,3); t++){
+        for (int t=0; t<pow(N,2); t++){
             p = initialize(p);
             // walk N steps
             for (int s=0; s<N; s++){
-                walk = gsl_rng_uniform(rng);
+                walk = unif(rng);
                
                 partition = 0;
                 while (walk > (partition+1.0)/(2.0*Dim)){
